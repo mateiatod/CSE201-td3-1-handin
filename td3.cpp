@@ -94,7 +94,9 @@ bool simulate_projectile(const double magnitude, const double angle,
   t = 0;
   x = 0;
   y = 0;
-
+//  telemetry = append_to_array(t,telemetry,telemetry_current_size,telemetry_max_size);
+//  telemetry = append_to_array(x,telemetry,telemetry_current_size,telemetry_max_size);
+//  telemetry = append_to_array(y,telemetry,telemetry_current_size,telemetry_max_size);
   hit_target = false;
   hit_obstacle = false;
   while (y >= 0 && (! hit_target) && (! hit_obstacle)) {
@@ -102,9 +104,18 @@ bool simulate_projectile(const double magnitude, const double angle,
     if (target_coordinates != NULL) {
       remove_target(targets, tot_targets, target_coordinates);
       hit_target = true;
+      telemetry = append_to_array(t,telemetry,telemetry_current_size,telemetry_max_size);
+      telemetry = append_to_array(x,telemetry,telemetry_current_size,telemetry_max_size);
+      telemetry = append_to_array(y,telemetry,telemetry_current_size,telemetry_max_size);
     } else if (find_collision(x, y, obstacles, tot_obstacles) != NULL) {
       hit_obstacle = true;
+      telemetry = append_to_array(t,telemetry,telemetry_current_size,telemetry_max_size);
+      telemetry = append_to_array(x,telemetry,telemetry_current_size,telemetry_max_size);
+      telemetry = append_to_array(y,telemetry,telemetry_current_size,telemetry_max_size);
     } else {
+      telemetry = append_to_array(t,telemetry,telemetry_current_size,telemetry_max_size);
+      telemetry = append_to_array(x,telemetry,telemetry_current_size,telemetry_max_size);
+      telemetry = append_to_array(y,telemetry,telemetry_current_size,telemetry_max_size);
       t = t + simulation_interval;
       y = v0_y * t  - 0.5 * g * t * t;
       x = v0_x * t;
@@ -120,5 +131,36 @@ void merge_telemetry(double **telemetries,
                      double* &global_telemetry,
                      int &global_telemetry_current_size,
                      int &global_telemetry_max_size) {
-  // IMPLEMENT YOUR FUNCTION HERE
+  if (tot_telemetries == 0){
+      return;
+  }
+  int pointers[tot_telemetries],sum = 0;
+  for (int i = 0; i < tot_telemetries; i++){
+      pointers[i] = 0;
+      sum += telemetries_sizes[i];
+  }
+  sum /= 3;
+//  std::cout<<telemetries;
+  for (int _ = 0; _ < sum ; _++){
+      double min_t;
+      for (int i = 0; i < tot_telemetries;i++){
+          if (telemetries_sizes[i] > pointers[i]){
+              min_t = telemetries[i][pointers[i]];
+              break;
+          }
+
+      }
+/*      double min_t = telemetries[][]*/;
+      int position;
+      for (int i = 0; i < tot_telemetries; i++){
+          if (telemetries_sizes[i] > pointers[i] && telemetries[i][pointers[i]] <= min_t){
+              min_t = telemetries[i][pointers[i]];
+              position = i;
+          }
+      }
+      global_telemetry = append_to_array(telemetries[position][pointers[position]],global_telemetry,global_telemetry_current_size,global_telemetry_max_size);
+      global_telemetry = append_to_array(telemetries[position][pointers[position]+1],global_telemetry,global_telemetry_current_size,global_telemetry_max_size);
+      global_telemetry = append_to_array(telemetries[position][pointers[position]+2],global_telemetry,global_telemetry_current_size,global_telemetry_max_size);
+      pointers[position] += 3;
+  }
 }
